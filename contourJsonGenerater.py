@@ -9,7 +9,7 @@ from PIL import Image, ImageEnhance
 import json
 
 
-def generate_mask_points(image_path):
+def generate_mask_points(image_path, type=0):
     file_name = os.path.splitext(os.path.basename(image_path))[0]
 
     # 读取图片
@@ -25,7 +25,7 @@ def generate_mask_points(image_path):
     regions = []
     label['width'] = image.shape[0]
     label['height'] = image.shape[1]
-
+    label['type'] = type
     for index, contour in enumerate(mask_contours):
         regions += contour[0:contour.shape[0], 0].tolist()
     label['regions'] = regions
@@ -37,15 +37,20 @@ def generate_mask_points(image_path):
     return label
 
 
+def save_json(path, data):
+    with open(path, 'w') as f:
+        f.write(json.dumps(data))
+
+
 if __name__ == '__main__':
     img_dir_path = './label/right/'
     img_list = glob.glob(os.path.join(img_dir_path, '*.jp*'))
     print('处理图片数量:{}'.format(len(img_list)))
     labels = []
+    label_type = 0
     for image_path in img_list:
-        label = generate_mask_points(image_path)
+        label = generate_mask_points(image_path, label_type)
         labels.append(label)
-
-    with open('./label/right/labels.json', 'w') as f:
-        f.write(json.dumps(labels))
+    path = './label/right/labels.json'
+    save_json(path, labels)
     print(len(labels))
